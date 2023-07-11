@@ -18,8 +18,8 @@ vicmd_symbol   = "[→](green)"
 symbol = " "
 
 [directory]
-home_symbol       = " ~"
-read_only         = " "
+home_symbol       = "󰋜 ~"
+read_only         = " "
 style             = "cyan"
 truncate_to_repo  = false
 truncation_length = 4
@@ -27,7 +27,7 @@ truncation_symbol = "…/"
 
 [git_branch]
 style  = "green"
-symbol = " "
+symbol = " "
 
 [git_status]
 ahead    = "⇡${count}"
