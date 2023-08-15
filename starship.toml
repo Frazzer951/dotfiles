@@ -6,8 +6,7 @@ $fill\
 $cmd_duration $jobs $time $line_break\
 [╰─](240)$character"""
 
-command_timeout = 1000
-add_newline     = true
+add_newline = true
 
 [character]
 error_symbol   = "[→](red)"
