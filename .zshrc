@@ -7,6 +7,10 @@ if which pyenv-virtualenv-init > /dev/null; then
   eval "$(pyenv virtualenv-init -)";
 fi
 
+if which go > /dev/null; then
+  export PATH=$PATH:$(go env GOPATH)/bin
+fi
+
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
 
@@ -22,7 +26,16 @@ if [ -f '/Users/luke/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/luke
 # Path fix
 export PATH=/usr/local/bin:$PATH
 
-source $HOMEBREW_PREFIX/share/antigen/antigen.zsh
+if [[ $(uname) == 'Darwin' ]]; then
+    # Add to FPATH
+    fpath=( ~/.completions "${fpath[@]}" )
+
+    source $HOMEBREW_PREFIX/share/antigen/antigen.zsh
+else
+    source ~/antigen.zsh
+fi
+
+
 
 # Load the oh-my-zsh's library
 antigen use oh-my-zsh
@@ -34,7 +47,6 @@ antigen bundle vscode
 
 # Mac Plugins
 if [[ $(uname) == 'Darwin' ]]; then
-    antigen bundle zshzoo/macos
     antigen bundle digitalraven/omz-homebrew
 fi
 
@@ -54,5 +66,7 @@ EDITOR="code" # Set default editor to VSCode
 
 alias ls="ls -G" # Colorize ls output
 alias zshrc="${=EDITOR} ~/.zshrc" # Edit zshrc
+alias gha="act --container-architecture linux/amd64 -s GITHUB_TOKEN='$(gh auth token)'"
+alias dbtc="dbt debug && dbt clean && dbt deps"
 
 eval "$(starship init zsh)"
