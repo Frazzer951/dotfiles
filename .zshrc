@@ -25,6 +25,7 @@ if [ -f '/Users/luke/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/luke
 
 # Path fix
 export PATH=/usr/local/bin:$PATH
+export PATH="$HOME/.local/bin:$PATH"
 
 if [[ $(uname) == 'Darwin' ]]; then
     # Add to FPATH
@@ -68,5 +69,15 @@ alias ls="ls -G" # Colorize ls output
 alias zshrc="${=EDITOR} ~/.zshrc" # Edit zshrc
 alias gha="act --container-architecture linux/amd64 -s GITHUB_TOKEN='$(gh auth token)'"
 alias dbtc="dbt debug && dbt clean && dbt deps"
+alias gbm="git branch --merged | egrep -v \"(^\*|main|develop)\""
+alias gbmd="git branch --merged | egrep -v \"(^\*|main|develop)\" | xargs git branch -d"
+
+# Skip Copy Into on DBT Models
+export SKIP_ON_RUN_START=true
+export SKIP_ON_RUN_END=true
+
 
 eval "$(starship init zsh)"
+fpath+=~/.zfunc; autoload -Uz compinit; compinit
+
+zstyle ':completion:*' menu select

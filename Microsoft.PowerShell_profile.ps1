@@ -1,6 +1,7 @@
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
+Function f_psa { Start-Process wt -ArgumentList 'new-tab -p "C:\Program Files\PowerShell\7\pwsh.exe"' -Verb runAs }
 Function f_fpmi { cargo install --git https://github.com/Frazzer951/fpm.git }
 Function f_fpmid { cargo install --git https://github.com/Frazzer951/fpm.git --branch develop }
 Function f_fpmil { cargo install --path C:\dev\rust\fpm }
@@ -8,6 +9,8 @@ Function f_cmb { cmake --build . }
 Function f_cmc { cmake .. -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=on }
 Function f_cmcf { cmake --build . --target clangformat }
 Function f_cmct { cmake --build . --target clangtidy }
+
+Set-Alias -Name psa -Value f_psa
 
 Set-Alias -Name fpmi -Value f_fpmi
 Set-Alias -Name fpmid -Value f_fpmid
@@ -17,6 +20,74 @@ Set-Alias -Name cmb -Value f_cmb
 Set-Alias -Name cmc -Value f_cmc
 Set-Alias -Name cmcf -Value f_cmcf
 Set-Alias -Name cmct -Value f_cmct
+
+function Get-MergedBranches {
+    <#
+    .SYNOPSIS
+        Lists all merged Git branches excluding main and develop
+    .DESCRIPTION
+        This function shows all branches that have been merged into the current branch,
+        excluding main and develop branches. It's useful for identifying branches that
+        can be safely deleted.
+    .EXAMPLE
+        Get-MergedBranches
+    #>
+
+    $mergedBranches = git branch --merged |
+        Where-Object {
+            $_ -notmatch '^\*' -and
+            $_.Trim() -notin @('main', 'develop')
+        } |
+        ForEach-Object { $_.Trim() }
+
+    if ($mergedBranches) {
+        Write-Host "Merged branches that can be deleted:" -ForegroundColor Yellow
+        $mergedBranches | ForEach-Object { Write-Host $_ }
+    } else {
+        Write-Host "No merged branches found to clean up." -ForegroundColor Green
+    }
+}
+
+function Remove-MergedBranches {
+    <#
+    .SYNOPSIS
+        Deletes all merged Git branches excluding main and develop
+    .DESCRIPTION
+        This function deletes all branches that have been merged into the current branch,
+        excluding main and develop branches. Use with caution as this operation cannot
+        be undone.
+    .EXAMPLE
+        Remove-MergedBranches
+    #>
+
+    $mergedBranches = git branch --merged |
+        Where-Object {
+            $_ -notmatch '^\*' -and
+            $_.Trim() -notin @('main', 'develop')
+        } |
+        ForEach-Object { $_.Trim() }
+
+    if ($mergedBranches) {
+        Write-Host "The following merged branches will be deleted:" -ForegroundColor Yellow
+        $mergedBranches | ForEach-Object { Write-Host $_ }
+
+        $confirmation = Read-Host "Are you sure you want to delete these branches? (y/N)"
+        if ($confirmation -eq 'y') {
+            $mergedBranches | ForEach-Object {
+                git branch -d $_
+                Write-Host "Deleted branch: $_" -ForegroundColor Green
+            }
+        } else {
+            Write-Host "Operation cancelled." -ForegroundColor Blue
+        }
+    } else {
+        Write-Host "No merged branches found to delete." -ForegroundColor Green
+    }
+}
+
+# Create aliases for easier access
+Set-Alias -Name gbm -Value Get-MergedBranches
+Set-Alias -Name gbmd -Value Remove-MergedBranches
 
 Invoke-Expression (&starship init powershell)
 
